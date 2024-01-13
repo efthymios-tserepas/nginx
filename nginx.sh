@@ -169,6 +169,9 @@ if [[ "$nginx_version_installed" == "$nginx_version" ]]; then
 # Reload daemon-reload
 sudo systemctl daemon-reload
 
+    # Get the main process ID of Nginx
+    nginx_main_pid=$(ps aux | grep 'nginx: master process' | grep -v grep | awk '{print $2}')
+
     # Create the nginx.service file
     nginx_service_file="/lib/systemd/system/nginx.service"
     echo "[Unit]" > "$nginx_service_file"
@@ -182,7 +185,7 @@ sudo systemctl daemon-reload
     echo "ExecStartPre=/usr/bin/nginx -t" >> "$nginx_service_file"
     echo "ExecStart=/usr/bin/nginx" >> "$nginx_service_file"
     echo "ExecReload=/usr/sbin/nginx -s reload" >> "$nginx_service_file"
-    echo "ExecStop=/bin/kill -s QUIT $MAINPID" >> "$nginx_service_file"
+    echo "ExecStop=/bin/kill -s QUIT $nginx_main_pid" >> "$nginx_service_file"
     echo "PrivateTmp=true" >> "$nginx_service_file"
     echo "" >> "$nginx_service_file"
     echo "[Install]" >> "$nginx_service_file"
