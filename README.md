@@ -10,8 +10,9 @@ Features:
 
 # Usage
 
-To install Nginx using the default settings, run the following command:
+To install Nginx with the default settings, run the following command:
 
 ```bash
-curl -o- https://raw.githubusercontent.com/efthymios-tserepas/nginx/main/nginx.sh | sudo bash
+sudo bash -c "$(curl -o- https://raw.githubusercontent.com/efthymios-tserepas/nginx/main/nginx.sh)"
+
 
