@@ -12,11 +12,11 @@ The script downloads the selected version of Nginx source code from the official
 
 **Additional Features based on ./configure:**
 
-- **SSH Support:** 
-- **Gzip Compression:** 
-- **Status Module:** 
-- **Real IP Module:** 
-
+- **SSH Support** 
+- **Gzip Compression** 
+- **Status Module** 
+- **Real IP Module** 
+- **Streaming Module**
 
 # Usage
 
