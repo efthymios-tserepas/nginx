@@ -1,4 +1,4 @@
-This Bash script automates the installation of Nginx on Linux systems, including package manager detection for CentOS, Red Hat, Debian, Ubuntu, and Raspberry Pi (32-bit and 64-bit). The script gives you the flexibility to choose between the latest stable and mainline versions of Nginx during installation. If an older version of Nginx is detected, the script provides options to upgrade to the latest stable or mainline release.
+This Bash script automates the installation of Nginx on Linux systems, including package manager detection for CentOS, Red Hat, Debian, Ubuntu, Mint, and Raspberry Pi (32-bit and 64-bit). The script gives you the flexibility to choose between the latest stable and mainline versions of Nginx during installation. If an older version of Nginx is detected, the script provides options to upgrade to the latest stable or mainline release.
 
 The script downloads the selected version of Nginx source code from the official site, compiles it, and performs the installation with additional configurable settings.
 
