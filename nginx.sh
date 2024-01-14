@@ -48,6 +48,27 @@ else
     exit 1
 fi
 
+# Check for broken packages and fix if needed
+if command -v yum &> /dev/null; then
+    if sudo yum -y check-update; then
+        echo -e "\e[1;32mNo broken packages found.\e[0m"
+    else
+        echo -e "\e[1;31mError: Broken packages found. Please run 'sudo yum check-update' and resolve the issues manually.\e[0m"
+        exit 1
+    fi
+elif command -v apt-get &> /dev/null; then
+    # Debian, Ubuntu
+    if sudo apt -y --fix-broken install; then
+        echo -e "\e[1;32mDependency issues resolved.\e[0m"
+    else
+        echo -e "\e[1;31mError: Unable to fix broken dependencies. Please run 'sudo apt --fix-broken install' manually.\e[0m"
+        exit 1
+    fi
+else
+    echo "Unsupported package manager. Exiting..."
+    exit 1
+fi
+
 # Check for port 80 usage by any process
 nginx_port_in_use=$(netstat -tuln | awk '$6 == "LISTEN" && $4 ~ ":80$"{print "true"}')
 
