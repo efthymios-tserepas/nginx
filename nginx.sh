@@ -155,7 +155,9 @@ cd "$nginx_folder"
             --with-http_ssl_module \
             --with-http_gzip_static_module \
             --with-http_stub_status_module \
-            --with-http_realip_module
+            --with-http_realip_module \
+            --with-stream=dynamic \
+            --with-stream_ssl_module
 
 make
 sudo make install
