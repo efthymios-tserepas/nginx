@@ -25,12 +25,18 @@ To install Nginx with the default settings, run the following command:
 ```bash
 sudo bash -c "$(curl -o- https://raw.githubusercontent.com/efthymios-tserepas/nginx/main/nginx.sh)"
 
+
+
+
 ## Troubleshooting Dependencies
 
-After installing the required packages, the script checks for potential dependency issues. If broken packages are found, it attempts to fix them automatically. This ensures a smooth installation process. Here's how it works:
+After installing the required packages, the script checks for potential dependency issues. If broken packages are found, 
+it attempts to fix them automatically. This ensures a smooth installation process. Here's how it works:
 
 - For CentOS, Red Hat systems, it runs `sudo yum check-update` to check for broken packages.
 - For Debian, Ubuntu systems, it runs `sudo apt --fix-broken install` to resolve dependency issues.
 
-In case of errors or unresolved issues, users are prompted to take manual actions based on the reported messages. This ensures a robust installation even in complex dependency scenarios.
+In case of errors or unresolved issues, users are prompted to take manual actions based on the reported messages. 
+This ensures a robust installation even in complex dependency scenarios.
+
 
