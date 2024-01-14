@@ -18,16 +18,6 @@ The script downloads the selected version of Nginx source code from the official
 - **Real IP Module** 
 - **Streaming Module**
 
-# Usage
-
-To install Nginx with the default settings, run the following command:
-
-```bash
-sudo bash -c "$(curl -o- https://raw.githubusercontent.com/efthymios-tserepas/nginx/main/nginx.sh)"
-
-
-
-
 ## Troubleshooting Dependencies
 
 After installing the required packages, the script checks for potential dependency issues. If broken packages are found, 
@@ -39,4 +29,9 @@ it attempts to fix them automatically. This ensures a smooth installation proces
 In case of errors or unresolved issues, users are prompted to take manual actions based on the reported messages. 
 This ensures a robust installation even in complex dependency scenarios.
 
+# Usage
 
+To install Nginx with the default settings, run the following command:
+
+```bash
+sudo bash -c "$(curl -o- https://raw.githubusercontent.com/efthymios-tserepas/nginx/main/nginx.sh)"
