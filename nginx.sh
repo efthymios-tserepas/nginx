@@ -26,7 +26,7 @@ function is_package_installed() {
 if command -v yum &> /dev/null; then
     # CentOS, Red Hat
     packages=("net-tools" "gcc" "make" "pcre" "pcre-devel" "openssl-devel" "zlib-devel" "curl")
-elif command -v apt-get &> /dev/null; then
+elif command -v apt &> /dev/null; then
     # Debian, Ubuntu
     packages=("net-tools" "build-essential" "libpcre3" "libpcre3-dev" "libssl-dev" "zlib1g-dev" "curl")
 else
