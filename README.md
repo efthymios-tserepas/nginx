@@ -25,7 +25,7 @@ To install Nginx with the default settings, run the following command:
 ```bash
 sudo bash -c "$(curl -o- https://raw.githubusercontent.com/efthymios-tserepas/nginx/main/nginx.sh)"
 
-# Troubleshooting Dependencies
+## Troubleshooting Dependencies
 
 After installing the required packages, the script checks for potential dependency issues. If broken packages are found, it attempts to fix them automatically. This ensures a smooth installation process. Here's how it works:
 
