@@ -31,7 +31,7 @@ it attempts to fix them automatically. This ensures a smooth installation proces
 In case of errors or unresolved issues, users are prompted to take manual actions based on the reported messages. 
 This ensures a robust installation even in complex dependency scenarios.
 
-# Usage
+# Install
 
 To install Nginx with the default settings, run the following command:
 
