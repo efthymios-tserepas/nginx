@@ -213,7 +213,13 @@ sudo systemctl daemon-reload
     echo "" >> "$nginx_service_file"
     echo "[Install]" >> "$nginx_service_file"
     echo "WantedBy=multi-user.target" >> "$nginx_service_file"
-
+  
+    # Checks and updates ExecReload
+    if grep -q "ExecReload=/usr/sbin/nginx" "$nginx_service_file"; then
+        sed -i 's|ExecReload=/usr/sbin/nginx -s reload|ExecReload=/usr/bin/nginx -s reload|' "$nginx_service_file"
+        echo "ExecReload in $nginx_service_file updated."
+    fi
+        
     # Start and enable nginx
     sudo systemctl start nginx
     sudo systemctl enable nginx
