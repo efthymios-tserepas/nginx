@@ -180,7 +180,8 @@ cd "$nginx_folder"
             --with-stream=dynamic \
             --with-stream_ssl_module \
             --with-http_v2_module \
-            
+            --with-http_sub_module
+
                         
 make
 sudo make install
