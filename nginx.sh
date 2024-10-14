@@ -179,7 +179,8 @@ cd "$nginx_folder"
             --with-http_realip_module \
             --with-stream=dynamic \
             --with-stream_ssl_module \
-            --with-http_v2_module
+            --with-http_v2_module \
+            --with-ngx_http_sub_module
 
 
 make
