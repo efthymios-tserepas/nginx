@@ -180,7 +180,8 @@ cd "$nginx_folder"
             --with-stream=dynamic \
             --with-stream_ssl_module \
             --with-http_v2_module \
-            --with-http_sub_module
+            --with-http_sub_module \
+             --add-module=../ngx_brotli
 
                         
 make
