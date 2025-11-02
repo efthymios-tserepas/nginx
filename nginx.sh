@@ -167,9 +167,9 @@ sudo rm "${nginx_folder}.tar.gz"
 cd "$nginx_folder"
 
 # Step 4: Download Brotli module ===
-echo -e "\e[1;32mDownloading Brotli module...\e[0m"
-git clone --recurse-submodules https://github.com/eustas/ngx_brotli.git
-chown -R $(whoami):$(whoami) ngx_brotli/
+#echo -e "\e[1;32mDownloading Brotli module...\e[0m"
+#git clone --recurse-submodules https://github.com/eustas/ngx_brotli.git
+#chown -R $(whoami):$(whoami) ngx_brotli/
 
 
 # Step 5: Configure and install Nginx
@@ -187,7 +187,7 @@ chown -R $(whoami):$(whoami) ngx_brotli/
             --with-stream_ssl_module \
             --with-http_v2_module \
             --with-http_sub_module \
-            --add-module=./ngx_brotli 
+            #--add-module=./ngx_brotli 
              
                         
 make
