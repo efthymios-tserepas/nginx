@@ -166,7 +166,13 @@ tar -zxvf "${nginx_folder}.tar.gz"
 sudo rm "${nginx_folder}.tar.gz"
 cd "$nginx_folder"
 
-# Step 4: Configure and install Nginx
+# Step 4: Download Brotli module ===
+echo -e "\e[1;32mDownloading Brotli module...\e[0m"
+git clone --recurse-submodules https://github.com/eustas/ngx_brotli.git
+chown -R $(whoami):$(whoami) ngx_brotli/
+
+
+# Step 5: Configure and install Nginx
 ./configure --sbin-path=/usr/bin/nginx \
             --conf-path=/etc/nginx/nginx.conf \
             --error-log-path=/var/log/nginx/error.log \
@@ -181,12 +187,13 @@ cd "$nginx_folder"
             --with-stream_ssl_module \
             --with-http_v2_module \
             --with-http_sub_module \
+            --add-module=./ngx_brotli 
              
                         
 make
 sudo make install
 
-# Step 5: Check Nginx version
+# Step 6: Check Nginx version
 nginx_version_installed=$(nginx -v 2>&1 | awk -F "/" '/nginx/ {print $2}')
 
 if [[ "$nginx_version_installed" == "$nginx_version" ]]; then
