@@ -1,3 +1,5 @@
+workdir=$(mktemp -d /tmp/nginx-build-v2.XXXXXXXX)
+chmod 700 "$workdir"
 if [[ -z "$version" ]]; then
   if [[ -z "$channel" ]]; then
     if [[ "$assume_yes" == true || ! -t 0 ]]; then
@@ -124,5 +126,3 @@ systemctl daemon-reload
 systemctl enable --now nginx
 systemctl is-active --quiet nginx || die 'Service did not start.'
 say "SUCCESS: nginx $version is active and enabled."
-"$BIN" -v
-say "LAN test: http://$(hostname -I | awk '{print $1}')"
