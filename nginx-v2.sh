@@ -1,99 +1,3 @@
-#!/usr/bin/env bash
-# nginx-installer v2.0.0
-# Build nginx from official sources on Ubuntu/Debian or RHEL-family Linux.
-# Ubuntu 26.04 support: PCRE2, compiler toolchain, and safe systemd integration.
-set -Eeuo pipefail
-
-readonly BIN=/usr/local/sbin/nginx
-readonly UNIT=/etc/systemd/system/nginx.service
-readonly CONFIG=/etc/nginx/nginx.conf
-readonly MARKER='Managed by nginx-installer-v2'
-channel=''
-version=''
-assume_yes=false
-allow_upgrade=false
-workdir=''
-backupdir=''
-install_started=false
-prior_install=false
-prior_running=false
-
-say() { printf '[nginx-v2] %s\n' "$*"; }
-die() { printf '[nginx-v2] ERROR: %s\n' "$*" >&2; exit 1; }
-usage() {
-  cat <<'HELP'
-Usage: sudo bash nginx-v2.sh [OPTIONS]
-  --channel stable|mainline   Release channel (prompts by default on a terminal)
-  --version X.Y.Z            Build an explicit nginx version instead
-  --yes                      Non-interactive: use stable unless a channel is given
-  --upgrade                  Allow upgrading an installation managed by this v2 script
-  --help                     Show help
-Environment: NGINX_BUILD_JOBS=2 (default, suitable for small Raspberry Pis)
-This script compiles upstream nginx; it does NOT install the distro nginx package.
-No automatic reboot or firewall changes are performed.
-HELP
-}
-
-cleanup() {
-  local rc=$?
-  trap - EXIT
-  if (( rc != 0 )) && [[ "$install_started" == true ]]; then
-    say 'Installation failed; attempting to restore the previous installation.' >&2
-    if [[ "$prior_install" == true ]]; then
-      [[ ! -f "$backupdir/nginx" ]] || cp -a "$backupdir/nginx" "$BIN" || true
-      [[ ! -f "$backupdir/nginx.conf" ]] || cp -a "$backupdir/nginx.conf" "$CONFIG" || true
-      [[ ! -f "$backupdir/nginx.service" ]] || cp -a "$backupdir/nginx.service" "$UNIT" || true
-      systemctl daemon-reload || true
-      if [[ "$prior_running" == true ]]; then systemctl start nginx || true; fi
-    else
-      rm -f "$UNIT" "$BIN" "$CONFIG"
-      systemctl daemon-reload || true
-    fi
-  fi
-  [[ -z "$workdir" ]] || rm -rf -- "$workdir"
-  if (( rc != 0 )); then say "Exited with code $rc. No reboot was requested." >&2; fi
-  exit "$rc"
-}
-trap cleanup EXIT
-
-while (( $# )); do
-  case "$1" in
-    --channel) (( $# >= 2 )) || die '--channel requires a value'; channel=$2; shift 2 ;;
-    --version) (( $# >= 2 )) || die '--version requires a value'; version=$2; shift 2 ;;
-    --yes|-y) assume_yes=true; shift ;;
-    --upgrade) allow_upgrade=true; shift ;;
-    --help|-h) usage; exit 0 ;;
-    *) die "Unknown argument: $1" ;;
-  esac
-done
-[[ $(id -u) == 0 ]] || die 'Run with sudo.'
-command -v systemctl >/dev/null || die 'Requires systemd.'
-[[ -z "$channel" || "$channel" == stable || "$channel" == mainline ]] || die 'Choose stable or mainline.'
-[[ -z "$version" || "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die 'Invalid version; expected X.Y.Z.'
-
-# Never overwrite an nginx package or a pre-existing service not installed by v2.
-if [[ -f "$UNIT" ]] && ! grep -Fq "$MARKER" "$UNIT"; then
-  die "Existing nginx unit at $UNIT is not managed by v2. Not overwriting it."
-fi
-if [[ -f /lib/systemd/system/nginx.service || -f /usr/lib/systemd/system/nginx.service ]]; then
-  die 'A distribution nginx systemd unit already exists. Refusing to overwrite it.'
-fi
-if command -v nginx >/dev/null 2>&1; then
-  existing_bin=$(command -v nginx)
-  [[ $(readlink -f "$existing_bin") == "$BIN" ]] || die "Existing nginx binary ($existing_bin) is not managed by this installer."
-fi
-if [[ -e "$BIN" || -e "$UNIT" ]]; then
-  [[ -f "$UNIT" && -x "$BIN" ]] || die 'Partial nginx installation exists. Inspect it before proceeding.'
-  [[ "$allow_upgrade" == true ]] || die 'v2 already installed. Run again with --upgrade to replace its binary.'
-  prior_install=true
-  if systemctl is-active --quiet nginx; then prior_running=true; fi
-elif [[ -e "$CONFIG" ]]; then
-  die "Existing configuration $CONFIG found without a v2 installation. Not overwriting it."
-fi
-
-# Fetch official release metadata (requires TLS). Never scrape arbitrary versions.
-workdir=$(mktemp -d /tmp/nginx-build-v2.XXXXXXXX)
-chmod 700 "$workdir"
 if [[ -z "$version" ]]; then
   if [[ -z "$channel" ]]; then
     if [[ "$assume_yes" == true || ! -t 0 ]]; then
@@ -106,14 +10,22 @@ if [[ -z "$version" ]]; then
   fi
   curl --fail --silent --show-error --location --retry 3 --connect-timeout 15 \
     https://nginx.org/en/download.html --output "$workdir/download.html"
-  version=$(awk -v label="${channel^} version" '
-    index($0,label) { found=1; next }
-    found && match($0,/nginx-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz/) {
-      result=substr($0,RSTART,RLENGTH); sub(/^nginx-/,"",result); sub(/\.tar\.gz$/,"",result);
-      print result; exit
-    }
-  ' "$workdir/download.html")
-  [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die 'Could not identify upstream release; use --version X.Y.Z.'
+  # Official nginx versions use an even minor for stable and odd for mainline.
+  # Read version references across the entire upstream download page, rather than
+  # assuming that the release heading and the tarball URL occupy separate lines.
+  # This also tolerates upstream HTML whitespace/layout changes.
+  version=$(
+    grep -Eo 'nginx-[0-9]+\.[0-9]+\.[0-9]+' "$workdir/download.html" |
+      sed 's/^nginx-//' |
+      awk -F. -v channel="$channel" '
+        NF == 3 && $1 ~ /^[0-9]+$/ && $2 ~ /^[0-9]+$/ && $3 ~ /^[0-9]+$/ {
+          if ((channel == "stable" && $2 % 2 == 0) ||
+              (channel == "mainline" && $2 % 2 == 1)) print
+        }' |
+      sort -Vu | tail -n 1
+  ) || die 'Could not parse the official nginx download page; use --version X.Y.Z.'
+  [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die 'No matching upstream release found; use --version X.Y.Z.'
+  say "Resolved latest $channel release: nginx $version"
 fi
 say "Building nginx $version from nginx.org (not apt nginx)."
 
@@ -214,4 +126,3 @@ systemctl is-active --quiet nginx || die 'Service did not start.'
 say "SUCCESS: nginx $version is active and enabled."
 "$BIN" -v
 say "LAN test: http://$(hostname -I | awk '{print $1}')"
-say 'No automatic reboot performed. Firewall rules were not modified.'
